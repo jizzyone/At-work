@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>React test</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      function Dropdown({ onEdit, onArchive, onHide }) {
+        return (
+          <div className="dropdown-menu">
+            <button onClick={onEdit}>Редактировать</button>
+            <button onClick={onArchive}>Архивировать</button>
+            <button onClick={onHide}>Скрыть</button>
+          </div>
+        );
+      }
+      function App() {
+        const [users, setUsers] = React.useState([])
+        const [loading, setLoading] = React.useState(false)
+        const [archivedUsers, setArchivedUsers] = React.useState([])
+        const [openDropdown, setOpenDropdown] = React.useState(null)
+
+        React.useEffect(() => {
+          setLoading(true)
+          fetch("https://jsonplaceholder.typicode.com/users")
+            .then(response => response.json())
+            .then(json => setUsers(json))
+            .finally(() => {
+              setLoading(false)
+            })
+        }, [])
+
+        const handleMoreOptions = (userId) => {
+          setOpenDropdown(openDropdown === userId ? null : userId)
+        }
+
+        const handleEdit = (userId) => {
+          // Здесь должна быть логика для перехода на страницу редактирования
+          setOpenDropdown(null)
+        }
+
+        const handleArchive = (userId) => {
+          const userToArchive = users.find(user => user.id === userId)
+          setUsers(users.filter(user => user.id !== userId))
+          setArchivedUsers([...archivedUsers, userToArchive])
+          setOpenDropdown(null)
+        }
+
+        const handleUnarchive = (userId) => {
+        const userToUnarchive = archivedUsers.find(user => user.id === userId);
+        setArchivedUsers(archivedUsers.filter(user => user.id !== userId));
+        setUsers([...users, userToUnarchive]);
+        };
+
+        const handleHide = (userId) => {
+          setUsers(users.filter(user => user.id !== userId))
+          setOpenDropdown(null)
+        }
+
+        return (
+          <div className="App">
+            <header>
+              <img src="./svg/старый лого атворк.svg" alt="Старый лого атворк"/>
+              <img src="./svg/registered menu.svg" alt="Зарегистрированное меню"/>
+            </header>
+            {loading ? (
+              <div>Loading...</div>
+            ) : (
+              <>
+                <h1 className='main-title'>Активные</h1>
+                <p id='line'></p>
+                <div className='main-table'>
+                  {users.map(user => (
+                    <div key={user.id} className='user-block'>
+                      <img id='avatar' src="./svg/vladPhoto.jpg" alt="Аватар"/>
+                      <div className="user-info">
+                        <h2 className='username'>{user.username}</h2>
+                        <p className='company'>{user.company.name}</p>
+                        <p className='address'>{user.address.city}</p>
+                      </div>
+                      <button className="more-options" onClick={() => handleMoreOptions(user.id)}>⋮</button>
+                      {openDropdown === user.id && (
+                        <Dropdown 
+                          onEdit={() => handleEdit(user.id)}
+                          onArchive={() => handleArchive(user.id)}
+                          onHide={() => handleHide(user.id)}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <h1 className='main-title'>Архив</h1>
+                <p id='line'></p>
+                <div className='main-table'>
+                  {archivedUsers.map(user => (
+                    <div key={user.id} className='user-block archived'>
+                      <img id='avatar' src="./svg/vladPhoto.jpg" alt="Аватар"/>
+                      <div className="user-info">
+                        <h2 className='username'>{user.username}</h2>
+                        <p className='company'>{user.company.name}</p>
+                        <p className='address'>{user.address.city}</p>
+                      </div>
+                      <button className='more-options' onClick={() => handleUnarchive(user.id)}>^</button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'))
+      root.render(<App />)
+    </script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #F4F4F4;
+        margin: 0;
+        padding: 20px;
+      }
+      header {
+        background-color: #FDFDFD;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .App {
+        max-width: 1170px;
+        margin: 0 auto;
+      }
+
+      .main-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .main-table {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .user-block {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        align-items: flex-start;
+        position: relative;
+      }
+
+      #avatar {
+        width: 112px;
+        height: 120px;
+        gap: 0px;
+        border-radius: 8px 8px 8px 8px;
+        opacity: 0px;
+      }
+      #line{
+        border-color: #DADADA;
+        border-bottom: 1px solid;
+      }
+
+      .user-info {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        margin-left: 20px;
+      }
+
+      .username {
+        font-size: 20px;
+        font-weight: bold;
+        color: #22A0BC;
+        margin: 0 0 5px 0;
+      }
+
+      .company {
+        color: #595959;
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 50px 0;
+      }
+
+      .address {
+        font-size: 14px;
+        color: #9C9C9C;
+        margin: 0;
+      }
+
+      .more-options {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+      .dropdown-menu {
+        position: absolute;
+        top: 40px;
+        right: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 1000;
+      }
+      .dropdown-menu button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        text-align: left;
+        border: none;
+        background: none;
+        cursor: pointer;
+      }
+      .dropdown-menu button:hover {
+        background-color: #f5f5f5;
+      }
+      .user-block.archived {
+        background-color: #e0e0e0; /* Серый фон для архивированных карточек */
+        opacity: 0.6; /* Немного уменьшим прозрачность для эффекта архивирования */
+      }
+    </style>
+  </body>
+</html>
