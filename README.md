@@ -5,4 +5,4 @@
 - React
 - JavaScript
 
-Запускать проект либо через Live Server, либо через github-pages, проект задеплоен.
+Запускать проект либо через Live Server в VS Code, либо через github-pages, проект задеплоен.
